@@ -37,6 +37,12 @@ if True: #attempting to make testing/debugging easier and faster
 from . z2d_registration import Z2D_REG
 
 from . z2d_panel import Z2D_PT_panel
+from . z2d_panel import Z2D_PT_panel_View
+from . z2d_panel import Z2D_PT_panel_Frames
+from . z2d_panel import Z2D_PT_panel_Brushes
+from . z2d_panel import Z2D_PT_panel_Layers
+from . z2d_panel import Z2D_PT_panel_Setup
+
 
 from . z2d_op_orbit import Z2D_OT_orbit_ccw_operator
 from . z2d_op_orbit import Z2D_OT_orbit_cw_operator
@@ -51,6 +57,11 @@ Z2D_REG.init();
 
 classes = ( 
 	Z2D_PT_panel
+	, Z2D_PT_panel_View
+	, Z2D_PT_panel_Frames
+	, Z2D_PT_panel_Brushes
+	, Z2D_PT_panel_Layers
+	, Z2D_PT_panel_Setup
 	, Z2D_OT_orbit_ccw_operator
 	, Z2D_OT_orbit_cw_operator
 	, Z2D_OT_orbit_reset_operator 
