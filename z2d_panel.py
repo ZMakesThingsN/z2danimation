@@ -198,6 +198,11 @@ class Z2D_PT_panel_Setup(Panel):
 	bl_parent_id = "Z2D_PT_panel"
 
 	def draw(self, context):
+		layout = self.layout
+	
+		row = layout.row();
+		row.operator('object.z2d_fake_preview_operator', text="Preview", icon="TRACKING_REFINE_BACKWARDS")
+	
 		pass;
 
 class Z2D_PT_panel(Panel):
