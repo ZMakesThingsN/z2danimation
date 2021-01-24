@@ -16,6 +16,24 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+#TODO
+#	Add in onion skin common settings to view (its a view thing)
+#		? How do we differentiate view layer stuff?
+#	Preview thread/timer dies randomly, so we have to check for that?
+#		? registering it ON USE/TOGGLE instead?
+#	Need presets for brushes to make simple colored sketch, ink, fill's
+#		? improves fill/ink cutter?
+#
+#Things that would be EXTREMELY useful:
+#	"timeline easing" modifyer; select which layers to affect, and drag a point left/right
+#		This will adjust the easing to be in, out (compressing the frames appropriatel)
+#		Which can help give some acceleration to the time between frames (defaulting to linear of course)
+#	User Editable blend points
+#		Drag from->to points to define correspondences between frames;
+#		Then interpolation can reorder the strokes and interpolate with that sa a base?
+#		Or use more complicated methods.
+#
+
 import bpy
 from bpy.types import Panel
 
@@ -53,6 +71,13 @@ class Z2D_PT_panel_Frames(Panel):
 		row = layout.row()
 		row.operator('object.z2d_frame_rem_shift_rem', text="", icon="TRIA_LEFT")
 		row.operator('object.z2d_frame_add_shift_add', text="", icon="TRIA_RIGHT")
+		
+		row = layout.row()
+		row.operator('object.z2d_fblend_direct', text="!B", icon="GRID")
+		
+		row = layout.row()
+		row.operator("gpencil.z2d_fblend_interpolate", text="Z2D Interpolate")
+		
 		
 class Z2D_PT_panel_Brushes(Panel):
 	bl_space_type = "VIEW_3D"
@@ -205,6 +230,32 @@ class Z2D_PT_panel_Setup(Panel):
 	
 		pass;
 
+		
+class VIEW3D_MT_edit_gpencil_interpolate_z2dinterpolate(bpy.types.Menu):
+	#bl_space_type = "VIEW_3D"
+	#bl_region_type = "UI"
+	bl_label = "Blend"
+	#bl_category = "Z2D Interpolate"
+	#bl_parent_id = "VIEW3D_MT_edit_gpencil_interpolate"#"VIEW3D_MT_paint_gpencil"	#VIEW3D_MT_edit_gpencil_interpolate"	#"VIEW3D_MT_edit_gpencil_interpolate"
+
+	#if gp_edit:
+	#	if obj and obj.mode == 'PAINT_GPENCIL':
+	#		layout.menu("VIEW3D_MT_paint_gpencil")
+			
+	def draw(self, context):
+
+		layout = self.layout
+		
+		#layout.separator()
+		
+		#row = layout.row();
+
+		#layout.operator("gpencil.interpolate", text="Interpolate")
+		#layout.operator("gpencil.interpolate_sequence", text="Sequence")
+		layout.operator("gpencil.z2d_fblend_interpolate", text="Z2D Interpolate")
+
+
+		
 class Z2D_PT_panel(Panel):
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "UI"
@@ -215,6 +266,9 @@ class Z2D_PT_panel(Panel):
 		scene = context.scene
 			
 		layout = self.layout	#https://docs.blender.org/api/current/bpy.types.UILayout.html#bpy.types.UILayout
+		
+		#OBJECT_OP_Z2D_fblend_Interpolate
+		
 		
 		#layout.use_property_split = True;
 		#layout.use_property_decorate = False;

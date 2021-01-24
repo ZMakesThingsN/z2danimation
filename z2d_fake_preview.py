@@ -134,6 +134,81 @@ z2d_fakepreview_prev_time = 0
 z2d_fakepreview_fake_frame = 0
 z2d_preview_links = [];
 
+def injectFloatProp( target, pname, userfmin=0.0, userfmax = 1.0 ):
+	target[ pname ] = 0.0
+	
+	from rna_prop_ui import (
+		rna_idprop_ui_prop_get,
+		rna_idprop_ui_prop_clear,
+		rna_idprop_ui_prop_update,
+		rna_idprop_ui_prop_default_set,
+		rna_idprop_value_item_type,
+	)
+	
+	#id_data
+	#prop_type, is_array = rna_idprop_value_item_type( target[ pname ] )
+	prop_ui = rna_idprop_ui_prop_get( target, pname )
+	prop_ui["min"] = 0.0;
+	prop_ui["max"] = 1.0;
+	#prop_ui["subtype"] = 'COLOR';#('COLOR', "Linear Color", "Color in the linear space");
+	rna_idprop_ui_prop_default_set( target, pname, target[ pname ] )
+	
+
+def injectColorProp( target, pname ):
+	target[ pname ] = [ 0.0, 0.0, 0.0 ];
+	
+	from rna_prop_ui import (
+		rna_idprop_ui_prop_get,
+		rna_idprop_ui_prop_clear,
+		rna_idprop_ui_prop_update,
+		rna_idprop_ui_prop_default_set,
+		rna_idprop_value_item_type,
+	)
+	
+	#id_data
+	#prop_type, is_array = rna_idprop_value_item_type( target[ pname ] )
+	prop_ui = rna_idprop_ui_prop_get( target, pname )
+	prop_ui["min"] = 0.0;
+	prop_ui["max"] = 1.0;
+	prop_ui["subtype"] = 'COLOR';#('COLOR', "Linear Color", "Color in the linear space");
+	rna_idprop_ui_prop_default_set( target, pname, target[ pname ] )
+	
+	#target[ pname ].typecode = 'f'
+	
+	#??? other crap is inferred like min, max, subtype???
+	#print( dir( target[ pname ] ) );
+	#print( dir( target[ pname ][0] ) );
+	
+	#WM_OT_properties_edit -> wm.py 
+	#	rna_vector_subtype_items 
+	#	'COLOR'
+	#call operator WM_OT_properties_edit on this target;
+	#
+	#MAYBE even call THIS operator:
+	#	WM_OT_properties_add
+	#		data_path
+	#		
+    #	rna_idprop_ui_create(item, prop, default=1.0)
+	#
+	#
+    #self._init_subtype(prop_type, is_array, subtype)
+	
+	#Hoooowww to access and add in subtype???
+	#target[ pname ].subtype = ('COLOR', "Linear Color", "Color in the linear space");
+	
+	""" 
+	"Only ints floats and dicts are allowed in ID property arrays"
+	target[ pname ] = bpy.props.FloatVectorProperty(
+		name = pname,
+		subtype = "COLOR",	#COLOR_GAMMA
+		size = 3,
+		min = 0.0,
+		max = 1.0,
+		default = (0.0,0.0,0.0)
+	)
+	""" 
+	
+
 @bpy.app.handlers.persistent
 def z2d_fakepreview_timer_update():
 
@@ -203,6 +278,11 @@ def z2d_fakepreview_timer_update():
 				dst["z2d_preview_speed"] = 1.0;
 				dst["z2d_preview_frame"] = dst["z2d_preview_frame_min"];
 				dst["z2d_preview_frameblock"] = [];
+				injectColorProp( dst, "z2d_preview_colorize" );
+				injectFloatProp( dst, "z2d_preview_colorize_factor", 0.0, 1.0 );
+				
+				#bpy.props.FloatVectorProperty
+				dst["z2d_preview_thickness"] =  0;
 				
 			
 			#Fix this later
@@ -320,6 +400,9 @@ def z2d_fakepreview_timer_update():
 							
 							newlayer.frames.copy( layer.frames[ addframe ] );
 							
+							#Hack to force frame to appear on 0 (may not work if frames go negative
+							newlayer.frames[0].frame_number = 0;
+							
 							#newlayer.frames[0].frame_number = ?
 							
 							newlayer.opacity = layer.opacity;
@@ -330,7 +413,20 @@ def z2d_fakepreview_timer_update():
 							#newlayer = dst.layers.new( layer.info, set_active=False );
 					
 							#newlayer.frames.copy( layer.frames[ f_index ] );
-						
+							
+							#Apply adjusted Tint Color + Tint Factor, Stroke Thickness
+							if dst["z2d_preview_colorize_factor"] > 0:
+								#dst["z2d_preview_colorize"] = 
+								newlayer.tint_color = dst["z2d_preview_colorize"]
+								newlayer.tint_factor = dst["z2d_preview_colorize_factor"]
+							#else:
+							#	newlayer.tint_factor = 0.0;
+								
+							if dst["z2d_preview_thickness"] != 0:
+								newlayer.line_change = dst["z2d_preview_thickness"]
+							#else:
+							#	newlayer.line_change = 0;
+							
 				#print( currframe, usefps, deltatime, layers_to_addupdate );
 		
 				dst.update_tag(); #trigger redraw???
@@ -466,6 +562,13 @@ class Z2D_OT_fake_preview_operator(Operator):
 				
 				obj.data["z2d_preview_frame"] = obj.data["z2d_preview_frame_min"];
 				obj.data["z2d_preview_frameblock"] = [];
+				
+				if not obj.data.get( "z2d_preview_colorize" ):
+					injectColorProp( obj.data, "z2d_preview_colorize" );
+				if not obj.data.get( "z2d_preview_colorize_factor" ):
+					injectFloatProp( obj.data, "z2d_preview_colorize_factor", 0.0, 1.0 );
+				if not obj.data.get( "z2d_preview_thickness" ):
+					obj.data["z2d_preview_thickness"] =  0;
 				
 				#z2d_preview_links.append( (obj, target) );
 				z2d_preview_links.append( (obj.data.name, target.data.name) );
